@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,7 +63,7 @@ export const Reports = () => {
     { segment: "Manufacturing A", parameter: "pH Level", q1: 7.2, q2: 7.1, q3: 7.3, q4: 7.0 },
     { segment: "Manufacturing B", parameter: "pH Level", q1: 7.4, q2: 7.2, q3: 7.1, q4: 7.3 },
     { segment: "Electrical", parameter: "pH Level", q1: 7.1, q2: 7.3, q3: 7.2, q4: 7.4 },
-    { segment: "Store", parameter: "pH Level", q1: 7.3, q2: 7.0, q3: 7.2, q2: 7.1 }
+    { segment: "Store", parameter: "pH Level", q1: 7.3, q2: 7.0, q3: 7.2, q4: 7.1 }
   ];
 
   const calculations = [
