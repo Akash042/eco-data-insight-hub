@@ -105,85 +105,88 @@ export const ProformaTable = ({ proforma, userRole, onUpdateRow, onAddComment, o
             </TableRow>
           </TableHeader>
           <TableBody>
-            {proforma.rows.map((row, index) => (
-              <TableRow key={row.id}>
-                <TableCell>{index + 1}</TableCell>
-                {proforma.fields.map((field) => {
-                  const comments = getFieldComments(row.id, field.id);
-                  const isEditing = editingRow === row.id;
-                  
-                  return (
-                    <TableCell key={field.id} className="relative">
-                      <div className="flex items-center gap-2">
-                        {isEditing ? (
-                          <Input
-                            value={editData[field.id] || ''}
-                            onChange={(e) => setEditData({...editData, [field.id]: e.target.value})}
-                            className="w-full"
-                          />
-                        ) : (
-                          <span>{row.data[field.id] || '-'}</span>
-                        )}
+            {proforma.rows.map((row, index) => {
+              const isEditing = editingRow === row.id;
+              
+              return (
+                <TableRow key={row.id}>
+                  <TableCell>{index + 1}</TableCell>
+                  {proforma.fields.map((field) => {
+                    const comments = getFieldComments(row.id, field.id);
+                    
+                    return (
+                      <TableCell key={field.id} className="relative">
+                        <div className="flex items-center gap-2">
+                          {isEditing ? (
+                            <Input
+                              value={editData[field.id] || ''}
+                              onChange={(e) => setEditData({...editData, [field.id]: e.target.value})}
+                              className="w-full"
+                            />
+                          ) : (
+                            <span>{row.data[field.id] || '-'}</span>
+                          )}
+                          
+                          {comments.length > 0 && (
+                            <div className="flex items-center gap-1">
+                              <MessageCircle className="h-4 w-4 text-blue-500" />
+                              <span className="text-xs text-blue-500">{comments.length}</span>
+                            </div>
+                          )}
+                          
+                          {(userRole === 'SSE' || userRole === 'BO') && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setCommentDialog({ open: true, rowId: row.id, fieldId: field.id })}
+                            >
+                              <MessageCircle className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
                         
                         {comments.length > 0 && (
-                          <div className="flex items-center gap-1">
-                            <MessageCircle className="h-4 w-4 text-blue-500" />
-                            <span className="text-xs text-blue-500">{comments.length}</span>
+                          <div className="mt-1 space-y-1">
+                            {comments.map((comment) => (
+                              <div key={comment.id} className="text-xs bg-yellow-50 p-2 rounded border-l-2 border-yellow-400">
+                                <div className="font-medium">{comment.author}</div>
+                                <div>{comment.comment}</div>
+                                <div className="text-gray-500">{comment.createdAt}</div>
+                              </div>
+                            ))}
                           </div>
                         )}
-                        
-                        {(userRole === 'SSE' || userRole === 'BO') && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setCommentDialog({ open: true, rowId: row.id, fieldId: field.id })}
-                          >
-                            <MessageCircle className="h-3 w-3" />
+                      </TableCell>
+                    );
+                  })}
+                  <TableCell>
+                    <Badge className={getRowStatusColor(row.status)}>
+                      {row.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      {isEditing ? (
+                        <>
+                          <Button size="sm" onClick={() => handleSaveRow(row.id)}>
+                            <Save className="h-3 w-3" />
                           </Button>
-                        )}
-                      </div>
-                      
-                      {comments.length > 0 && (
-                        <div className="mt-1 space-y-1">
-                          {comments.map((comment) => (
-                            <div key={comment.id} className="text-xs bg-yellow-50 p-2 rounded border-l-2 border-yellow-400">
-                              <div className="font-medium">{comment.author}</div>
-                              <div>{comment.comment}</div>
-                              <div className="text-gray-500">{comment.createdAt}</div>
-                            </div>
-                          ))}
-                        </div>
+                          <Button variant="outline" size="sm" onClick={handleCancelEdit}>
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </>
+                      ) : (
+                        canEdit && (
+                          <Button variant="ghost" size="sm" onClick={() => handleEditRow(row)}>
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                        )
                       )}
-                    </TableCell>
-                  );
-                })}
-                <TableCell>
-                  <Badge className={getRowStatusColor(row.status)}>
-                    {row.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    {isEditing ? (
-                      <>
-                        <Button size="sm" onClick={() => handleSaveRow(row.id)}>
-                          <Save className="h-3 w-3" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={handleCancelEdit}>
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </>
-                    ) : (
-                      canEdit && (
-                        <Button variant="ghost" size="sm" onClick={() => handleEditRow(row)}>
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                      )
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

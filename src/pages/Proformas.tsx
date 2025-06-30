@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,7 +55,13 @@ export const Proformas = () => {
       rows: [
         {
           id: "row1",
-          data: { temp: "25.5", ph: "7.2", turbidity: "0.8", location: "Main Tank" },
+          data: { 
+            id: "data1",
+            temp: "25.5", 
+            ph: "7.2", 
+            turbidity: "0.8", 
+            location: "Main Tank" 
+          },
           comments: [],
           status: "submitted",
           submittedBy: "John Smith",
@@ -88,7 +93,7 @@ export const Proformas = () => {
       if (p.id === proformaId) {
         return {
           ...p,
-          rows: p.rows.map(r => r.id === rowId ? { ...r, data } : r)
+          rows: p.rows.map(r => r.id === rowId ? { ...r, data: { ...data, id: r.data.id } } : r)
         };
       }
       return p;
@@ -122,7 +127,9 @@ export const Proformas = () => {
   const handleAddRow = (proformaId: string) => {
     const newRow: ProformaRow = {
       id: `row_${Date.now()}`,
-      data: {},
+      data: {
+        id: `data_${Date.now()}`
+      },
       comments: [],
       status: 'draft'
     };
