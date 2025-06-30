@@ -29,7 +29,7 @@ export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
     { icon: FileText, label: "Proformas", path: "/proformas", roles: ["SSE", "BO", "Concern Staff"] },
     { icon: BarChart3, label: "Reports", path: "/reports", roles: ["SSE", "BO", "WPO"] },
     { icon: PieChart, label: "Analytics", path: "/analytics", roles: ["SSE", "BO", "WPO"] },
-    { icon: Award, label: "ISO Management", path: "/iso", roles: ["ISO", "WPO"] },
+    { icon: Award, label: "ISO Management", path: "/iso", roles: ["SSE", "BO", "WPO"] },
     { icon: Users, label: "User Management", path: "/users", roles: ["SSE", "BO"] },
     { icon: Bell, label: "Notifications", path: "/notifications", roles: ["SSE", "BO", "WPO", "Concern Staff"] },
     { icon: Download, label: "Exports", path: "/exports", roles: ["SSE", "BO", "WPO"] },

@@ -22,22 +22,45 @@ import {
   MapPin
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { User, UserRole, UserPermissions } from "@/types/proforma";
 
 export const UserManagement = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [newUserPermissions, setNewUserPermissions] = useState<UserPermissions>({
+    fillProforma: false,
+    reviewEditComment: false,
+    submitFinalProforma: false,
+    reopenProforma: false,
+    generateSegmentReport: false,
+    generateDeptReport: false,
+    generateEnvConsolidated: false,
+    viewAllDashboards: false,
+    uploadISOCertificate: false,
+    receiveISORenewalAlert: false,
+  });
+  const [selectedRole, setSelectedRole] = useState<UserRole | "">("");
   const { toast } = useToast();
 
-  const users = [
+  const users: User[] = [
     {
       id: "USR-001",
       name: "John Smith",
       email: "john.smith@company.com",
       role: "Concern Staff",
       department: "Manufacturing",
-      status: "active",
-      lastLogin: "2024-06-30",
-      avatar: "/placeholder.svg"
+      permissions: {
+        fillProforma: true,
+        reviewEditComment: false,
+        submitFinalProforma: false,
+        reopenProforma: false,
+        generateSegmentReport: false,
+        generateDeptReport: false,
+        generateEnvConsolidated: false,
+        viewAllDashboards: false,
+        uploadISOCertificate: false,
+        receiveISORenewalAlert: false,
+      }
     },
     {
       id: "USR-002", 
@@ -45,9 +68,18 @@ export const UserManagement = () => {
       email: "sarah.johnson@company.com",
       role: "SSE",
       department: "Manufacturing",
-      status: "active",
-      lastLogin: "2024-06-30",
-      avatar: "/placeholder.svg"
+      permissions: {
+        fillProforma: false,
+        reviewEditComment: true,
+        submitFinalProforma: true,
+        reopenProforma: false,
+        generateSegmentReport: true,
+        generateDeptReport: true,
+        generateEnvConsolidated: false,
+        viewAllDashboards: 'dept',
+        uploadISOCertificate: true,
+        receiveISORenewalAlert: true,
+      }
     },
     {
       id: "USR-003",
@@ -55,9 +87,18 @@ export const UserManagement = () => {
       email: "mike.davis@company.com", 
       role: "Concern Staff",
       department: "Electrical",
-      status: "inactive",
-      lastLogin: "2024-06-28",
-      avatar: "/placeholder.svg"
+      permissions: {
+        fillProforma: true,
+        reviewEditComment: false,
+        submitFinalProforma: false,
+        reopenProforma: false,
+        generateSegmentReport: false,
+        generateDeptReport: false,
+        generateEnvConsolidated: false,
+        viewAllDashboards: false,
+        uploadISOCertificate: false,
+        receiveISORenewalAlert: false,
+      }
     },
     {
       id: "USR-004",
@@ -65,28 +106,133 @@ export const UserManagement = () => {
       email: "robert.brown@company.com",
       role: "BO",
       department: "All",
-      status: "active",
-      lastLogin: "2024-06-30",
-      avatar: "/placeholder.svg"
+      permissions: {
+        fillProforma: false,
+        reviewEditComment: true,
+        submitFinalProforma: true,
+        reopenProforma: false,
+        generateSegmentReport: true,
+        generateDeptReport: true,
+        generateEnvConsolidated: false,
+        viewAllDashboards: 'dept',
+        uploadISOCertificate: true,
+        receiveISORenewalAlert: true,
+      }
+    },
+    {
+      id: "USR-005",
+      name: "Emma Wilson",
+      email: "emma.wilson@company.com",
+      role: "WPO",
+      department: "All",
+      permissions: {
+        fillProforma: false,
+        reviewEditComment: false,
+        submitFinalProforma: false,
+        reopenProforma: true,
+        generateSegmentReport: false,
+        generateDeptReport: false,
+        generateEnvConsolidated: true,
+        viewAllDashboards: true,
+        uploadISOCertificate: true,
+        receiveISORenewalAlert: true,
+      }
     }
   ];
 
-  const departments = ["Manufacturing", "Electrical", "Store", "ISO"];
-  const roles = ["Concern Staff", "SSE", "BO", "WPO"];
+  const departments = ["Manufacturing", "Electrical", "Store", "ISO", "All"];
+  const roles: UserRole[] = ["Concern Staff", "SSE", "BO", "WPO"];
+
+  const getDefaultPermissions = (role: UserRole): UserPermissions => {
+    switch (role) {
+      case "Concern Staff":
+        return {
+          fillProforma: true,
+          reviewEditComment: false,
+          submitFinalProforma: false,
+          reopenProforma: false,
+          generateSegmentReport: false,
+          generateDeptReport: false,
+          generateEnvConsolidated: false,
+          viewAllDashboards: false,
+          uploadISOCertificate: false,
+          receiveISORenewalAlert: false,
+        };
+      case "SSE":
+        return {
+          fillProforma: false,
+          reviewEditComment: true,
+          submitFinalProforma: true,
+          reopenProforma: false,
+          generateSegmentReport: true,
+          generateDeptReport: true,
+          generateEnvConsolidated: false,
+          viewAllDashboards: 'dept',
+          uploadISOCertificate: true,
+          receiveISORenewalAlert: true,
+        };
+      case "BO":
+        return {
+          fillProforma: false,
+          reviewEditComment: true,
+          submitFinalProforma: true,
+          reopenProforma: false,
+          generateSegmentReport: true,
+          generateDeptReport: true,
+          generateEnvConsolidated: false,
+          viewAllDashboards: 'dept',
+          uploadISOCertificate: true,
+          receiveISORenewalAlert: true,
+        };
+      case "WPO":
+        return {
+          fillProforma: false,
+          reviewEditComment: false,
+          submitFinalProforma: false,
+          reopenProforma: true,
+          generateSegmentReport: false,
+          generateDeptReport: false,
+          generateEnvConsolidated: true,
+          viewAllDashboards: true,
+          uploadISOCertificate: true,
+          receiveISORenewalAlert: true,
+        };
+      default:
+        return {
+          fillProforma: false,
+          reviewEditComment: false,
+          submitFinalProforma: false,
+          reopenProforma: false,
+          generateSegmentReport: false,
+          generateDeptReport: false,
+          generateEnvConsolidated: false,
+          viewAllDashboards: false,
+          uploadISOCertificate: false,
+          receiveISORenewalAlert: false,
+        };
+    }
+  };
+
+  const handleRoleChange = (role: UserRole) => {
+    setSelectedRole(role);
+    setNewUserPermissions(getDefaultPermissions(role));
+  };
+
+  const handlePermissionChange = (permission: keyof UserPermissions, value: boolean | string) => {
+    setNewUserPermissions(prev => ({
+      ...prev,
+      [permission]: value
+    }));
+  };
 
   const handleCreateUser = () => {
     toast({
       title: "User Created",
-      description: "New user has been successfully created and invitation sent.",
+      description: "New user has been successfully created with assigned permissions and invitation sent.",
     });
     setIsCreateDialogOpen(false);
-  };
-
-  const handleToggleStatus = (userId: string) => {
-    toast({
-      title: "User Status Updated",
-      description: "User status has been successfully changed.",
-    });
+    setSelectedRole("");
+    setNewUserPermissions(getDefaultPermissions("Concern Staff"));
   };
 
   const getRoleColor = (role: string) => {
@@ -99,22 +245,31 @@ export const UserManagement = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    return status === "active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
-  };
-
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.department.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const permissionLabels = {
+    fillProforma: "Fill Proforma",
+    reviewEditComment: "Review/Edit/Comment",
+    submitFinalProforma: "Submit Final Proforma",
+    reopenProforma: "Reopen Proforma",
+    generateSegmentReport: "Generate Segment Report",
+    generateDeptReport: "Generate Dept. Report",
+    generateEnvConsolidated: "Generate Env. Consolidated",
+    viewAllDashboards: "View All Dashboards",
+    uploadISOCertificate: "Upload ISO Certificate",
+    receiveISORenewalAlert: "Receive ISO Renewal Alert",
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600">Manage users, roles, and department access</p>
+          <p className="text-gray-600">Manage users, roles, and department-wise permissions</p>
         </div>
         
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -124,11 +279,11 @@ export const UserManagement = () => {
               Create User
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New User</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="userName">Full Name</Label>
@@ -143,7 +298,7 @@ export const UserManagement = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="userRole">Role</Label>
-                  <Select>
+                  <Select onValueChange={handleRoleChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
@@ -168,12 +323,50 @@ export const UserManagement = () => {
                   </Select>
                 </div>
               </div>
+
+              {selectedRole && (
+                <div>
+                  <Label className="text-base font-semibold">Permissions</Label>
+                  <div className="mt-3 p-4 border rounded-lg bg-gray-50">
+                    <div className="grid grid-cols-1 gap-4">
+                      {Object.entries(permissionLabels).map(([key, label]) => (
+                        <div key={key} className="flex items-center justify-between">
+                          <Label htmlFor={key} className="text-sm font-medium">
+                            {label}
+                          </Label>
+                          {key === 'viewAllDashboards' ? (
+                            <Select 
+                              value={String(newUserPermissions[key as keyof UserPermissions])}
+                              onValueChange={(value) => handlePermissionChange(key as keyof UserPermissions, value === 'true' ? true : value === 'dept' ? 'dept' : false)}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="false">No</SelectItem>
+                                <SelectItem value="dept">Dept.</SelectItem>
+                                <SelectItem value="true">Yes</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Switch
+                              id={key}
+                              checked={Boolean(newUserPermissions[key as keyof UserPermissions])}
+                              onCheckedChange={(checked) => handlePermissionChange(key as keyof UserPermissions, checked)}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
               
               <div className="flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleCreateUser}>
+                <Button onClick={handleCreateUser} disabled={!selectedRole}>
                   Create User & Send Invitation
                 </Button>
               </div>
@@ -204,7 +397,7 @@ export const UserManagement = () => {
                 <Shield className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{users.filter(u => u.status === 'active').length}</p>
+                <p className="text-2xl font-bold">{users.length}</p>
                 <p className="text-sm text-gray-600">Active Users</p>
               </div>
             </div>
@@ -217,7 +410,7 @@ export const UserManagement = () => {
                 <Mail className="h-6 w-6 text-purple-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">4</p>
+                <p className="text-2xl font-bold">5</p>
                 <p className="text-sm text-gray-600">Departments</p>
               </div>
             </div>
@@ -251,30 +444,6 @@ export const UserManagement = () => {
                 className="pl-10"
               />
             </div>
-            <div className="flex gap-2">
-              <Select>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="All Roles" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  {roles.map(role => (
-                    <SelectItem key={role} value={role}>{role}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="All Departments" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Departments</SelectItem>
-                  {departments.map(dept => (
-                    <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -291,8 +460,7 @@ export const UserManagement = () => {
                 <TableHead>User</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Department</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Login</TableHead>
+                <TableHead>Key Permissions</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -302,7 +470,7 @@ export const UserManagement = () => {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar>
-                        <AvatarImage src={user.avatar} />
+                        <AvatarImage src="/placeholder.svg" />
                         <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                       </Avatar>
                       <div>
@@ -318,17 +486,19 @@ export const UserManagement = () => {
                   </TableCell>
                   <TableCell>{user.department}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(user.status)}>
-                        {user.status}
-                      </Badge>
-                      <Switch
-                        checked={user.status === 'active'}
-                        onCheckedChange={() => handleToggleStatus(user.id)}
-                      />
+                    <div className="flex flex-wrap gap-1">
+                      {Object.entries(user.permissions).filter(([_, value]) => value === true || value === 'dept').slice(0, 3).map(([key, value]) => (
+                        <Badge key={key} variant="outline" className="text-xs">
+                          {permissionLabels[key as keyof UserPermissions]}
+                        </Badge>
+                      ))}
+                      {Object.entries(user.permissions).filter(([_, value]) => value === true || value === 'dept').length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{Object.entries(user.permissions).filter(([_, value]) => value === true || value === 'dept').length - 3} more
+                        </Badge>
+                      )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-gray-600">{user.lastLogin}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Button variant="ghost" size="sm">

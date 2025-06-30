@@ -10,6 +10,7 @@ import { Proformas } from "./pages/Proformas";
 import { Reports } from "./pages/Reports";
 import { Analytics } from "./pages/Analytics";
 import { UserManagement } from "./pages/UserManagement";
+import { ISOManagement } from "./pages/ISOManagement";
 import { Notifications } from "./pages/Notifications";
 import { Exports } from "./pages/Exports";
 import { SettingsPage } from "./pages/Settings";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/reports" element={<Reports />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/users" element={<UserManagement />} />
+            <Route path="/iso" element={<ISOManagement />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/exports" element={<Exports />} />
             <Route path="/settings" element={<SettingsPage />} />
