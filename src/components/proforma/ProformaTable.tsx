@@ -4,12 +4,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Edit, MessageCircle, Save, X, Plus } from "lucide-react";
+import { Edit, MessageCircle, Save, X, Plus, Calculator } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Proforma, ProformaRow, ProformaComment, UserRole } from "@/types/proforma";
+import { Proforma, ProformaRow, ProformaComment, UserRole, MathCalculation } from "@/types/proforma";
+import { MathFunctionsPanel } from "./MathFunctionsPanel";
 
 interface ProformaTableProps {
   proforma: Proforma;
@@ -17,9 +18,17 @@ interface ProformaTableProps {
   onUpdateRow: (rowId: string, data: any) => void;
   onAddComment: (rowId: string, fieldId: string, comment: string) => void;
   onAddRow: () => void;
+  onSaveCalculation?: (rowId: string, calculation: MathCalculation) => void;
 }
 
-export const ProformaTable = ({ proforma, userRole, onUpdateRow, onAddComment, onAddRow }: ProformaTableProps) => {
+export const ProformaTable = ({ 
+  proforma, 
+  userRole, 
+  onUpdateRow, 
+  onAddComment, 
+  onAddRow,
+  onSaveCalculation 
+}: ProformaTableProps) => {
   const [editingRow, setEditingRow] = useState<string | null>(null);
   const [editData, setEditData] = useState<any>({});
   const [commentDialog, setCommentDialog] = useState<{ open: boolean; rowId: string; fieldId: string }>({
@@ -27,11 +36,16 @@ export const ProformaTable = ({ proforma, userRole, onUpdateRow, onAddComment, o
     rowId: '',
     fieldId: ''
   });
+  const [mathDialog, setMathDialog] = useState<{ open: boolean; rowId: string }>({
+    open: false,
+    rowId: ''
+  });
   const [newComment, setNewComment] = useState('');
   const { toast } = useToast();
 
   const canEdit = userRole === 'SSE' || userRole === 'BO' || (userRole === 'Concern Staff' && proforma.status !== 'submitted');
   const canAddRows = userRole === 'Concern Staff' || userRole === 'SSE' || userRole === 'BO';
+  const canUseMathFunctions = userRole === 'SSE' || userRole === 'BO';
 
   const handleEditRow = (row: ProformaRow) => {
     setEditingRow(row.id);
@@ -39,12 +53,19 @@ export const ProformaTable = ({ proforma, userRole, onUpdateRow, onAddComment, o
   };
 
   const handleSaveRow = (rowId: string) => {
-    onUpdateRow(rowId, editData);
+    // Update timestamp when row is saved
+    const updatedData = {
+      ...editData,
+      lastModified: new Date().toISOString(),
+      modifiedBy: `Current User (${userRole})`
+    };
+    
+    onUpdateRow(rowId, updatedData);
     setEditingRow(null);
     setEditData({});
     toast({
       title: "Row Updated",
-      description: "Row data has been successfully updated.",
+      description: "Row data has been successfully updated with timestamp.",
     });
   };
 
@@ -65,6 +86,17 @@ export const ProformaTable = ({ proforma, userRole, onUpdateRow, onAddComment, o
     }
   };
 
+  const handleSaveCalculation = (calculation: MathCalculation) => {
+    if (onSaveCalculation) {
+      onSaveCalculation(mathDialog.rowId, calculation);
+      toast({
+        title: "Calculation Saved",
+        description: "Mathematical calculation has been saved to the report.",
+      });
+    }
+    setMathDialog({ open: false, rowId: '' });
+  };
+
   const getRowStatusColor = (status: string) => {
     switch (status) {
       case 'draft': return 'bg-gray-100 text-gray-800';
@@ -78,6 +110,11 @@ export const ProformaTable = ({ proforma, userRole, onUpdateRow, onAddComment, o
   const getFieldComments = (rowId: string, fieldId: string) => {
     const row = proforma.rows.find(r => r.id === rowId);
     return row?.comments.filter(c => c.fieldId === fieldId) || [];
+  };
+
+  const getRowCalculations = (rowId: string) => {
+    const row = proforma.rows.find(r => r.id === rowId);
+    return row?.calculations || [];
   };
 
   return (
@@ -107,6 +144,7 @@ export const ProformaTable = ({ proforma, userRole, onUpdateRow, onAddComment, o
           <TableBody>
             {proforma.rows.map((row, index) => {
               const isEditing = editingRow === row.id;
+              const calculations = getRowCalculations(row.id);
               
               return (
                 <TableRow key={row.id}>
@@ -176,11 +214,22 @@ export const ProformaTable = ({ proforma, userRole, onUpdateRow, onAddComment, o
                           </Button>
                         </>
                       ) : (
-                        canEdit && (
-                          <Button variant="ghost" size="sm" onClick={() => handleEditRow(row)}>
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                        )
+                        <>
+                          {canEdit && (
+                            <Button variant="ghost" size="sm" onClick={() => handleEditRow(row)}>
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                          )}
+                          {canUseMathFunctions && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setMathDialog({ open: true, rowId: row.id })}
+                            >
+                              <Calculator className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </>
                       )}
                     </div>
                   </TableCell>
@@ -191,6 +240,30 @@ export const ProformaTable = ({ proforma, userRole, onUpdateRow, onAddComment, o
         </Table>
       </div>
 
+      {/* Show calculations if any exist */}
+      {proforma.rows.some(row => row.calculations && row.calculations.length > 0) && (
+        <div className="mt-4">
+          <h4 className="font-semibold mb-2">Saved Calculations</h4>
+          {proforma.rows.map((row, index) => {
+            const calculations = getRowCalculations(row.id);
+            if (calculations.length === 0) return null;
+            
+            return (
+              <div key={row.id} className="mb-2 p-3 bg-blue-50 rounded">
+                <div className="font-medium">Row {index + 1} Calculations:</div>
+                {calculations.map((calc) => (
+                  <div key={calc.id} className="text-sm mt-1">
+                    <span className="font-medium">{calc.formula}:</span> {calc.result.toFixed(2)}
+                    <span className="text-gray-500 ml-2">by {calc.appliedBy}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Comment Dialog */}
       <Dialog open={commentDialog.open} onOpenChange={(open) => setCommentDialog({...commentDialog, open})}>
         <DialogContent>
           <DialogHeader>
@@ -215,6 +288,21 @@ export const ProformaTable = ({ proforma, userRole, onUpdateRow, onAddComment, o
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Math Functions Dialog */}
+      <Dialog open={mathDialog.open} onOpenChange={(open) => setMathDialog({...mathDialog, open})}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Mathematical Functions</DialogTitle>
+          </DialogHeader>
+          <MathFunctionsPanel
+            fields={proforma.fields}
+            rowData={proforma.rows.map(r => r.data)}
+            onCalculationSave={handleSaveCalculation}
+            currentUser={`Current User (${userRole})`}
+          />
         </DialogContent>
       </Dialog>
     </div>

@@ -21,6 +21,16 @@ export interface ProformaRow {
   submittedAt?: string;
   reviewedBy?: string;
   reviewedAt?: string;
+  calculations?: MathCalculation[];
+}
+
+export interface MathCalculation {
+  id: string;
+  formula: string;
+  result: number;
+  appliedBy: string;
+  appliedAt: string;
+  description: string;
 }
 
 export interface ProformaComment {
@@ -48,6 +58,8 @@ export interface Proforma {
   submittedAt?: string;
   reopenedBy?: string;
   reopenedAt?: string;
+  lastModifiedAt?: string;
+  lastModifiedBy?: string;
 }
 
 export type UserRole = 'Concern Staff' | 'SSE' | 'BO' | 'WPO';
@@ -63,13 +75,15 @@ export interface User {
 
 export interface UserPermissions {
   fillProforma: boolean;
-  submitProforma: boolean;
-  reviewProforma: boolean;
-  editProforma: boolean;
-  assignProforma: boolean;
+  reviewEditComment: boolean;
+  submitFinalProforma: boolean;
   reopenProforma: boolean;
-  deleteProforma: boolean;
-  createProforma: boolean;
+  generateSegmentReport: boolean;
+  generateDeptReport: boolean;
+  generateEnvConsolidated: boolean;
+  viewAllDashboards: boolean | 'dept';
+  uploadISOCertificate: boolean;
+  receiveISORenewalAlert: boolean;
 }
 
 export interface Department {

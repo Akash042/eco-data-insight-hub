@@ -26,7 +26,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { CreateProformaDialog } from "@/components/proforma/CreateProformaDialog";
 import { ProformaTable } from "@/components/proforma/ProformaTable";
-import { Proforma, ProformaRow, UserRole } from "@/types/proforma";
+import { Proforma, ProformaRow, UserRole, MathCalculation } from "@/types/proforma";
 
 export const Proformas = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,25 +47,68 @@ export const Proformas = () => {
   const [proformas, setProformas] = useState<Proforma[]>([
     {
       id: "PF-001",
-      title: "Monthly Air Quality Check - Electrical Dept",
-      description: "Monthly air quality monitoring for electrical department - Segment 5",
+      title: "Monthly Air Quality Monitoring - Electrical Department",
+      description: "Comprehensive monthly air quality assessment for electrical department facilities including CO2, PM2.5, and AQI measurements",
       department: "Electrical",
       segment: "Environmental",
       fields: [
-        { id: "location", name: "Location", type: "text", required: true },
+        { id: "location", name: "Monitoring Location", type: "text", required: true },
         { id: "co2_level", name: "CO2 Level (ppm)", type: "number", required: true },
-        { id: "pm25", name: "PM2.5", type: "number", required: true },
-        { id: "status_reading", name: "Status", type: "select", required: true, options: ["Normal", "Warning", "Critical"] }
+        { id: "pm25", name: "PM2.5 (μg/m³)", type: "number", required: true },
+        { id: "air_quality_index", name: "Air Quality Index", type: "number", required: true },
+        { id: "noise_level", name: "Noise Level (dB)", type: "number", required: true },
+        { id: "status_reading", name: "Environmental Status", type: "select", required: true, options: ["Excellent", "Good", "Moderate", "Poor", "Hazardous"] }
       ],
       rows: [
         {
           id: "row1",
           data: { 
             id: "data1",
-            location: "Block A", 
+            location: "Block A - Main Production Floor", 
             co2_level: "450", 
-            pm25: "65", 
-            status_reading: "Normal"
+            pm25: "65",
+            air_quality_index: "85",
+            noise_level: "78",
+            status_reading: "Good",
+            lastModified: "2024-06-30T14:30:00",
+            modifiedBy: "John Smith (Concern Staff)"
+          },
+          comments: [
+            {
+              id: "comment1",
+              rowId: "row1",
+              fieldId: "co2_level",
+              comment: "CO2 levels are within acceptable range but close to upper limit. Consider increasing ventilation.",
+              author: "Sarah Johnson (SSE)",
+              createdAt: "2024-06-30T15:00:00"
+            }
+          ],
+          status: "submitted",
+          submittedBy: "John Smith",
+          submittedAt: "2024-06-30",
+          calculations: [
+            {
+              id: "calc1",
+              formula: "average(CO2 Level)",
+              result: 450,
+              appliedBy: "Sarah Johnson (SSE)",
+              appliedAt: "2024-06-30T15:30:00",
+              description: "Average CO2 level calculation"
+            }
+          ]
+        },
+        {
+          id: "row2",
+          data: { 
+            id: "data2",
+            location: "Block B - Quality Control Area", 
+            co2_level: "380", 
+            pm25: "45",
+            air_quality_index: "72",
+            noise_level: "65",
+            status_reading: "Good",
+            lastModified: "2024-06-30T16:15:00",
+            modifiedBy: "John Smith (Concern Staff)"
           },
           comments: [],
           status: "submitted",
@@ -75,28 +118,52 @@ export const Proformas = () => {
       ],
       assignedTo: ["John Smith"],
       createdBy: "Sarah Johnson (SSE)",
-      createdAt: "2024-06-25",
-      deadline: "2024-07-15",
-      status: "assigned"
+      createdAt: "2024-06-25T09:00:00",
+      deadline: "2024-07-15T23:59:59",
+      status: "in_progress",
+      lastModifiedAt: "2024-06-30T16:15:00",
+      lastModifiedBy: "John Smith (Concern Staff)"
     },
     {
       id: "PF-002",
-      title: "Water Quality Assessment - Manufacturing",
-      description: "Weekly water quality monitoring for manufacturing processes",
+      title: "Water Quality Assessment - Manufacturing Unit",
+      description: "Weekly water quality monitoring for manufacturing processes including pH, turbidity, and temperature measurements",
       department: "Manufacturing",
       segment: "Environmental",
       fields: [
-        { id: "temp", name: "Temperature (°C)", type: "number", required: true },
-        { id: "ph", name: "pH Level", type: "number", required: true },
+        { id: "sample_point", name: "Sample Collection Point", type: "text", required: true },
+        { id: "temperature", name: "Water Temperature (°C)", type: "number", required: true },
+        { id: "ph_level", name: "pH Level", type: "number", required: true },
         { id: "turbidity", name: "Turbidity (NTU)", type: "number", required: true },
-        { id: "location", name: "Sample Location", type: "text", required: true }
+        { id: "dissolved_oxygen", name: "Dissolved Oxygen (mg/L)", type: "number", required: true },
+        { id: "compliance_status", name: "Compliance Status", type: "select", required: true, options: ["Compliant", "Non-Compliant", "Requires Monitoring"] }
       ],
       rows: [],
       assignedTo: [],
       createdBy: "Sarah Johnson (SSE)",
-      createdAt: "2024-06-30",
-      deadline: "2024-07-20",
+      createdAt: "2024-06-30T10:00:00",
+      deadline: "2024-07-20T23:59:59",
       status: "not_assigned"
+    },
+    {
+      id: "PF-003",
+      title: "Waste Management Tracking - Store Department",
+      description: "Monthly waste segregation and disposal tracking for store department operations",
+      department: "Store",
+      segment: "Environmental",
+      fields: [
+        { id: "waste_type", name: "Waste Category", type: "select", required: true, options: ["Recyclable", "Biodegradable", "Hazardous", "Electronic", "General"] },
+        { id: "quantity", name: "Quantity (kg)", type: "number", required: true },
+        { id: "disposal_method", name: "Disposal Method", type: "text", required: true },
+        { id: "collection_date", name: "Collection Date", type: "date", required: true },
+        { id: "vendor_name", name: "Disposal Vendor", type: "text", required: true }
+      ],
+      rows: [],
+      assignedTo: ["Mike Davis"],
+      createdBy: "David Lee (BO)",
+      createdAt: "2024-06-28T14:00:00",
+      deadline: "2024-07-25T23:59:59",
+      status: "assigned"
     }
   ]);
 
@@ -246,6 +313,23 @@ export const Proformas = () => {
       title: "Proforma Assigned",
       description: `Proforma assigned to ${assignedTo.join(', ')}.`,
     });
+  };
+
+  const handleSaveCalculation = (proformaId: string, rowId: string, calculation: MathCalculation) => {
+    setProformas(proformas.map(p => {
+      if (p.id === proformaId) {
+        return {
+          ...p,
+          rows: p.rows.map(r => r.id === rowId ? { 
+            ...r, 
+            calculations: [...(r.calculations || []), calculation] 
+          } : r),
+          lastModifiedAt: new Date().toISOString(),
+          lastModifiedBy: `Current User (${currentUser.role})`
+        };
+      }
+      return p;
+    }));
   };
 
   const getStatusIcon = (status: string) => {
@@ -572,7 +656,7 @@ export const Proformas = () => {
                   <span className="font-medium">Segment:</span> {selectedProforma.segment}
                 </div>
                 <div>
-                  <span className="font-medium">Assigned To:</span> {selectedProforma.assignedTo.join(", ") || "Unassigned"}
+                  <span className="font-medium">Last Modified:</span> {selectedProforma.lastModifiedAt ? format(new Date(selectedProforma.lastModifiedAt), "MMM dd, yyyy HH:mm") : 'Never'}
                 </div>
               </div>
 
@@ -580,49 +664,9 @@ export const Proformas = () => {
                 proforma={selectedProforma}
                 userRole={currentUser.role}
                 onUpdateRow={(rowId, data) => handleUpdateRow(selectedProforma.id, rowId, data)}
-                onAddComment={(rowId, fieldId, comment) => {
-                  const newComment = {
-                    id: `comment_${Date.now()}`,
-                    rowId,
-                    fieldId,
-                    comment,
-                    author: currentUser.name,
-                    createdAt: new Date().toLocaleString()
-                  };
-
-                  setProformas(proformas.map(p => {
-                    if (p.id === selectedProforma.id) {
-                      return {
-                        ...p,
-                        rows: p.rows.map(r => r.id === rowId ? { 
-                          ...r, 
-                          comments: [...r.comments, newComment] 
-                        } : r)
-                      };
-                    }
-                    return p;
-                  }));
-                }}
-                onAddRow={() => {
-                  const newRow: ProformaRow = {
-                    id: `row_${Date.now()}`,
-                    data: {
-                      id: `data_${Date.now()}`
-                    },
-                    comments: [],
-                    status: 'draft'
-                  };
-
-                  setProformas(proformas.map(p => {
-                    if (p.id === selectedProforma.id) {
-                      return {
-                        ...p,
-                        rows: [...p.rows, newRow]
-                      };
-                    }
-                    return p;
-                  }));
-                }}
+                onAddComment={(rowId, fieldId, comment) => handleAddComment(selectedProforma.id, rowId, fieldId, comment)}
+                onAddRow={() => handleAddRow(selectedProforma.id)}
+                onSaveCalculation={(rowId, calculation) => handleSaveCalculation(selectedProforma.id, rowId, calculation)}
               />
 
               <div className="flex justify-end gap-3 border-t pt-4">
