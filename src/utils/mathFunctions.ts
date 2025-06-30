@@ -12,7 +12,7 @@ export const mathFunctions = {
   standardDeviation: (values: number[]) => {
     const avg = mathFunctions.average(values);
     const squareDiffs = values.map(value => Math.pow(value - avg, 2));
-    const avgSquareDiff = mathFunctions.average(squareDiffs);
+    const avgSquareDiff = squareDiffs.reduce((acc, val) => acc + val, 0) / squareDiffs.length;
     return Math.sqrt(avgSquareDiff);
   },
   percentage: (value: number, total: number) => (value / total) * 100,
