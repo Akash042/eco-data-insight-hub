@@ -15,18 +15,13 @@ export const mathFunctions = {
     const avgSquareDiff = squareDiffs.reduce((acc, val) => acc + val, 0) / squareDiffs.length;
     return Math.sqrt(avgSquareDiff);
   },
-  percentage: (value: number, total: number) => (value / total) * 100,
   range: (values: number[]) => mathFunctions.max(values) - mathFunctions.min(values)
 };
 
 export const applyMathFunction = (
   functionName: keyof typeof mathFunctions,
-  values: number[],
-  additionalParams?: any
+  values: number[]
 ): number => {
-  if (functionName === 'percentage' && additionalParams?.total) {
-    return mathFunctions.percentage(values[0], additionalParams.total);
-  }
   return mathFunctions[functionName](values);
 };
 
