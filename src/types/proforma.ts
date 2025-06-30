@@ -44,7 +44,7 @@ export interface Proforma {
   createdBy: string;
   createdAt: string;
   deadline: string;
-  status: 'draft' | 'active' | 'submitted' | 'closed' | 'reopened';
+  status: 'not_assigned' | 'assigned' | 'in_progress' | 'sent_for_review' | 'submitted' | 'reopened';
   submittedAt?: string;
   reopenedBy?: string;
   reopenedAt?: string;
@@ -58,4 +58,28 @@ export interface User {
   email: string;
   role: UserRole;
   department: string;
+  permissions: UserPermissions;
+}
+
+export interface UserPermissions {
+  fillProforma: boolean;
+  submitProforma: boolean;
+  reviewProforma: boolean;
+  editProforma: boolean;
+  assignProforma: boolean;
+  reopenProforma: boolean;
+  deleteProforma: boolean;
+  createProforma: boolean;
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface MasterData {
+  departments: Department[];
+  roles: UserRole[];
+  segments: string[];
 }

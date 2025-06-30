@@ -79,7 +79,7 @@ export const CreateProformaDialog = ({ open, onOpenChange, onCreateProforma }: C
       createdBy: "Current User",
       createdAt: new Date().toISOString(),
       deadline: selectedDate?.toISOString() || '',
-      status: 'active' as const
+      status: 'not_assigned' as const // Updated to use the new status
     };
 
     onCreateProforma(proforma);

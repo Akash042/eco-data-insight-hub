@@ -18,7 +18,10 @@ import {
   AlertCircle,
   Send,
   RotateCcw,
-  FileText
+  FileText,
+  Users,
+  Play,
+  MessageSquare
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreateProformaDialog } from "@/components/proforma/CreateProformaDialog";
@@ -27,6 +30,8 @@ import { Proforma, ProformaRow, UserRole } from "@/types/proforma";
 
 export const Proformas = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedProforma, setSelectedProforma] = useState<Proforma | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -42,25 +47,25 @@ export const Proformas = () => {
   const [proformas, setProformas] = useState<Proforma[]>([
     {
       id: "PF-001",
-      title: "Water Quality Assessment - Manufacturing",
-      description: "Monthly water quality monitoring for manufacturing department",
-      department: "Manufacturing",
+      title: "Monthly Air Quality Check - Electrical Dept",
+      description: "Monthly air quality monitoring for electrical department - Segment 5",
+      department: "Electrical",
       segment: "Environmental",
       fields: [
-        { id: "temp", name: "Temperature (°C)", type: "number", required: true },
-        { id: "ph", name: "pH Level", type: "number", required: true },
-        { id: "turbidity", name: "Turbidity (NTU)", type: "number", required: true },
-        { id: "location", name: "Sample Location", type: "text", required: true }
+        { id: "location", name: "Location", type: "text", required: true },
+        { id: "co2_level", name: "CO2 Level (ppm)", type: "number", required: true },
+        { id: "pm25", name: "PM2.5", type: "number", required: true },
+        { id: "status_reading", name: "Status", type: "select", required: true, options: ["Normal", "Warning", "Critical"] }
       ],
       rows: [
         {
           id: "row1",
           data: { 
             id: "data1",
-            temp: "25.5", 
-            ph: "7.2", 
-            turbidity: "0.8", 
-            location: "Main Tank" 
+            location: "Block A", 
+            co2_level: "450", 
+            pm25: "65", 
+            status_reading: "Normal"
           },
           comments: [],
           status: "submitted",
@@ -72,7 +77,26 @@ export const Proformas = () => {
       createdBy: "Sarah Johnson (SSE)",
       createdAt: "2024-06-25",
       deadline: "2024-07-15",
-      status: "active"
+      status: "assigned"
+    },
+    {
+      id: "PF-002",
+      title: "Water Quality Assessment - Manufacturing",
+      description: "Weekly water quality monitoring for manufacturing processes",
+      department: "Manufacturing",
+      segment: "Environmental",
+      fields: [
+        { id: "temp", name: "Temperature (°C)", type: "number", required: true },
+        { id: "ph", name: "pH Level", type: "number", required: true },
+        { id: "turbidity", name: "Turbidity (NTU)", type: "number", required: true },
+        { id: "location", name: "Sample Location", type: "text", required: true }
+      ],
+      rows: [],
+      assignedTo: [],
+      createdBy: "Sarah Johnson (SSE)",
+      createdAt: "2024-06-30",
+      deadline: "2024-07-20",
+      status: "not_assigned"
     }
   ]);
 
@@ -91,10 +115,17 @@ export const Proformas = () => {
   const handleUpdateRow = (proformaId: string, rowId: string, data: any) => {
     setProformas(proformas.map(p => {
       if (p.id === proformaId) {
-        return {
+        const updatedProforma = {
           ...p,
           rows: p.rows.map(r => r.id === rowId ? { ...r, data: { ...data, id: r.data.id } } : r)
         };
+        
+        // Auto-update status if data is being filled
+        if (updatedProforma.status === 'assigned' && updatedProforma.rows.some(r => Object.keys(r.data).length > 1)) {
+          updatedProforma.status = 'in_progress';
+        }
+        
+        return updatedProforma;
       }
       return p;
     }));
@@ -145,6 +176,23 @@ export const Proformas = () => {
     }));
   };
 
+  const handleSendForReview = (proformaId: string) => {
+    setProformas(proformas.map(p => {
+      if (p.id === proformaId) {
+        return {
+          ...p,
+          status: 'sent_for_review'
+        };
+      }
+      return p;
+    }));
+
+    toast({
+      title: "Sent for Review",
+      description: "Proforma has been sent for review to SSE/BO.",
+    });
+  };
+
   const handleSubmitProforma = (proformaId: string) => {
     setProformas(proformas.map(p => {
       if (p.id === proformaId) {
@@ -159,7 +207,7 @@ export const Proformas = () => {
 
     toast({
       title: "Proforma Submitted",
-      description: "Proforma has been submitted for final review.",
+      description: "Proforma has been submitted successfully.",
     });
   };
 
@@ -182,49 +230,78 @@ export const Proformas = () => {
     });
   };
 
+  const handleAssignProforma = (proformaId: string, assignedTo: string[]) => {
+    setProformas(proformas.map(p => {
+      if (p.id === proformaId) {
+        return {
+          ...p,
+          assignedTo,
+          status: assignedTo.length > 0 ? 'assigned' : 'not_assigned'
+        };
+      }
+      return p;
+    }));
+
+    toast({
+      title: "Proforma Assigned",
+      description: `Proforma assigned to ${assignedTo.join(', ')}.`,
+    });
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
+      case "not_assigned": return <Users className="h-4 w-4 text-gray-500" />;
+      case "assigned": return <Clock className="h-4 w-4 text-blue-500" />;
+      case "in_progress": return <Play className="h-4 w-4 text-orange-500" />;
+      case "sent_for_review": return <MessageSquare className="h-4 w-4 text-purple-500" />;
       case "submitted": return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case "active": return <Clock className="h-4 w-4 text-blue-500" />;
-      case "reopened": return <RotateCcw className="h-4 w-4 text-orange-500" />;
-      case "closed": return <FileText className="h-4 w-4 text-gray-500" />;
+      case "reopened": return <RotateCcw className="h-4 w-4 text-red-500" />;
       default: return <Clock className="h-4 w-4 text-gray-500" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "not_assigned": return "bg-gray-100 text-gray-800";
+      case "assigned": return "bg-blue-100 text-blue-800";
+      case "in_progress": return "bg-orange-100 text-orange-800";
+      case "sent_for_review": return "bg-purple-100 text-purple-800";
       case "submitted": return "bg-green-100 text-green-800";
-      case "active": return "bg-blue-100 text-blue-800";
-      case "reopened": return "bg-orange-100 text-orange-800";
-      case "closed": return "bg-gray-100 text-gray-800";
+      case "reopened": return "bg-red-100 text-red-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
+      case "not_assigned": return "Not Assigned";
+      case "assigned": return "Assigned";
+      case "in_progress": return "In Progress";
+      case "sent_for_review": return "Sent for Review";
       case "submitted": return "Submitted";
-      case "active": return "Active";
       case "reopened": return "Reopened";
-      case "closed": return "Closed";
       default: return "Unknown";
     }
   };
 
-  const filteredProformas = proformas.filter(proforma =>
-    proforma.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    proforma.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    proforma.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    proforma.segment.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProformas = proformas.filter(proforma => {
+    const matchesSearch = proforma.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      proforma.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      proforma.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      proforma.segment.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || proforma.status === statusFilter;
+    const matchesDepartment = departmentFilter === 'all' || proforma.department.toLowerCase() === departmentFilter;
+    
+    return matchesSearch && matchesStatus && matchesDepartment;
+  });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Proforma Management</h1>
-          <p className="text-gray-600">Create, assign, and manage department-wise proformas</p>
+          <p className="text-gray-600">Create, assign, and manage department-wise proformas with complete lifecycle tracking</p>
         </div>
         
         {canCreateProforma && (
@@ -238,17 +315,56 @@ export const Proformas = () => {
         )}
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Enhanced Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gray-100 rounded-full">
+                <Users className="h-6 w-6 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{proformas.filter(p => p.status === 'not_assigned').length}</p>
+                <p className="text-sm text-gray-600">Not Assigned</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-100 rounded-full">
-                <FileText className="h-6 w-6 text-blue-600" />
+                <Clock className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{proformas.length}</p>
-                <p className="text-sm text-gray-600">Total Proformas</p>
+                <p className="text-2xl font-bold">{proformas.filter(p => p.status === 'assigned').length}</p>
+                <p className="text-sm text-gray-600">Assigned</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-orange-100 rounded-full">
+                <Play className="h-6 w-6 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{proformas.filter(p => p.status === 'in_progress').length}</p>
+                <p className="text-sm text-gray-600">In Progress</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-100 rounded-full">
+                <MessageSquare className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{proformas.filter(p => p.status === 'sent_for_review').length}</p>
+                <p className="text-sm text-gray-600">Review</p>
               </div>
             </div>
           </CardContent>
@@ -269,21 +385,8 @@ export const Proformas = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-orange-100 rounded-full">
-                <Clock className="h-6 w-6 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{proformas.filter(p => p.status === 'active').length}</p>
-                <p className="text-sm text-gray-600">Active</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-100 rounded-full">
-                <RotateCcw className="h-6 w-6 text-purple-600" />
+              <div className="p-3 bg-red-100 rounded-full">
+                <RotateCcw className="h-6 w-6 text-red-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{proformas.filter(p => p.status === 'reopened').length}</p>
@@ -294,7 +397,7 @@ export const Proformas = () => {
         </Card>
       </div>
 
-      {/* Filters and Search */}
+      {/* Enhanced Filters and Search */}
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -308,19 +411,21 @@ export const Proformas = () => {
               />
             </div>
             <div className="flex gap-2">
-              <Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="not_assigned">Not Assigned</SelectItem>
+                  <SelectItem value="assigned">Assigned</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="sent_for_review">Sent for Review</SelectItem>
                   <SelectItem value="submitted">Submitted</SelectItem>
                   <SelectItem value="reopened">Reopened</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
                 </SelectContent>
               </Select>
-              <Select>
+              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Department" />
                 </SelectTrigger>
@@ -340,7 +445,7 @@ export const Proformas = () => {
         </CardContent>
       </Card>
 
-      {/* Proformas Table */}
+      {/* Enhanced Proformas Table */}
       <Card>
         <CardHeader>
           <CardTitle>All Proformas ({filteredProformas.length})</CardTitle>
@@ -364,9 +469,17 @@ export const Proformas = () => {
                 <TableRow key={proforma.id} className="hover:bg-gray-50">
                   <TableCell className="font-mono text-sm">{proforma.id}</TableCell>
                   <TableCell className="font-medium">{proforma.title}</TableCell>
-                  <TableCell>{proforma.department}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                      {proforma.department}
+                    </Badge>
+                  </TableCell>
                   <TableCell>{proforma.segment}</TableCell>
-                  <TableCell>{proforma.assignedTo.join(", ")}</TableCell>
+                  <TableCell>
+                    {proforma.assignedTo.length > 0 ? proforma.assignedTo.join(", ") : (
+                      <span className="text-gray-400 italic">Unassigned</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {getStatusIcon(proforma.status)}
@@ -388,13 +501,22 @@ export const Proformas = () => {
                           <Edit className="h-4 w-4" />
                         </Button>
                       )}
-                      {(currentUser.role === 'SSE' || currentUser.role === 'BO') && proforma.status !== 'submitted' && (
+                      {currentUser.role === 'Concern Staff' && proforma.status === 'in_progress' && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleSendForReview(proforma.id)}
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {(currentUser.role === 'SSE' || currentUser.role === 'BO') && proforma.status === 'sent_for_review' && (
                         <Button 
                           variant="ghost" 
                           size="sm"
                           onClick={() => handleSubmitProforma(proforma.id)}
                         >
-                          <Send className="h-4 w-4" />
+                          <CheckCircle className="h-4 w-4" />
                         </Button>
                       )}
                       {canReopenProforma && proforma.status === 'submitted' && (
@@ -427,24 +549,30 @@ export const Proformas = () => {
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
           <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
-                {selectedProforma.title} ({selectedProforma.id})
+              <DialogTitle className="flex items-center gap-3">
+                <span>{selectedProforma.title} ({selectedProforma.id})</span>
+                <div className="flex items-center gap-2">
+                  {getStatusIcon(selectedProforma.status)}
+                  <Badge className={getStatusColor(selectedProforma.status)}>
+                    {getStatusText(selectedProforma.status)}
+                  </Badge>
+                </div>
               </DialogTitle>
             </DialogHeader>
             
             <div className="space-y-6">
-              <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-3 gap-4 text-sm bg-gray-50 p-4 rounded-lg">
                 <div>
-                  <span className="font-medium">Department:</span> {selectedProforma.department}
+                  <span className="font-medium">Department:</span> 
+                  <Badge variant="outline" className="ml-2 bg-blue-50 text-blue-700">
+                    {selectedProforma.department}
+                  </Badge>
                 </div>
                 <div>
                   <span className="font-medium">Segment:</span> {selectedProforma.segment}
                 </div>
                 <div>
-                  <span className="font-medium">Status:</span>{" "}
-                  <Badge className={getStatusColor(selectedProforma.status)}>
-                    {getStatusText(selectedProforma.status)}
-                  </Badge>
+                  <span className="font-medium">Assigned To:</span> {selectedProforma.assignedTo.join(", ") || "Unassigned"}
                 </div>
               </div>
 
@@ -452,17 +580,64 @@ export const Proformas = () => {
                 proforma={selectedProforma}
                 userRole={currentUser.role}
                 onUpdateRow={(rowId, data) => handleUpdateRow(selectedProforma.id, rowId, data)}
-                onAddComment={(rowId, fieldId, comment) => handleAddComment(selectedProforma.id, rowId, fieldId, comment)}
-                onAddRow={() => handleAddRow(selectedProforma.id)}
+                onAddComment={(rowId, fieldId, comment) => {
+                  const newComment = {
+                    id: `comment_${Date.now()}`,
+                    rowId,
+                    fieldId,
+                    comment,
+                    author: currentUser.name,
+                    createdAt: new Date().toLocaleString()
+                  };
+
+                  setProformas(proformas.map(p => {
+                    if (p.id === selectedProforma.id) {
+                      return {
+                        ...p,
+                        rows: p.rows.map(r => r.id === rowId ? { 
+                          ...r, 
+                          comments: [...r.comments, newComment] 
+                        } : r)
+                      };
+                    }
+                    return p;
+                  }));
+                }}
+                onAddRow={() => {
+                  const newRow: ProformaRow = {
+                    id: `row_${Date.now()}`,
+                    data: {
+                      id: `data_${Date.now()}`
+                    },
+                    comments: [],
+                    status: 'draft'
+                  };
+
+                  setProformas(proformas.map(p => {
+                    if (p.id === selectedProforma.id) {
+                      return {
+                        ...p,
+                        rows: [...p.rows, newRow]
+                      };
+                    }
+                    return p;
+                  }));
+                }}
               />
 
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-3 border-t pt-4">
                 <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
                   Close
                 </Button>
-                {(currentUser.role === 'SSE' || currentUser.role === 'BO') && selectedProforma.status !== 'submitted' && (
-                  <Button onClick={() => handleSubmitProforma(selectedProforma.id)}>
+                {currentUser.role === 'Concern Staff' && selectedProforma.status === 'in_progress' && (
+                  <Button onClick={() => handleSendForReview(selectedProforma.id)}>
                     <Send className="h-4 w-4 mr-2" />
+                    Send for Review
+                  </Button>
+                )}
+                {(currentUser.role === 'SSE' || currentUser.role === 'BO') && selectedProforma.status === 'sent_for_review' && (
+                  <Button onClick={() => handleSubmitProforma(selectedProforma.id)}>
+                    <CheckCircle className="h-4 w-4 mr-2" />
                     Submit Proforma
                   </Button>
                 )}
