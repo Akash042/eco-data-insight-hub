@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -13,7 +12,8 @@ import {
   Home,
   PieChart,
   Calendar,
-  Download
+  Download,
+  FileBarChart
 } from "lucide-react";
 
 interface SidebarProps {
@@ -28,6 +28,7 @@ export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
     { icon: Home, label: "Dashboard", path: "/", roles: ["SSE", "BO", "WPO", "Concern Staff"] },
     { icon: FileText, label: "Proformas", path: "/proformas", roles: ["SSE", "BO", "Concern Staff"] },
     { icon: BarChart3, label: "Reports", path: "/reports", roles: ["SSE", "BO", "WPO"] },
+    { icon: FileBarChart, label: "Report Builder", path: "/report-builder", roles: ["SSE", "BO", "WPO"] },
     { icon: PieChart, label: "Analytics", path: "/analytics", roles: ["SSE", "BO", "WPO"] },
     { icon: Award, label: "ISO Management", path: "/iso", roles: ["SSE", "BO", "WPO"] },
     { icon: Users, label: "User Management", path: "/users", roles: ["SSE", "BO"] },

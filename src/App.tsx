@@ -8,6 +8,7 @@ import { DashboardLayout } from "./components/layout/DashboardLayout";
 import { Dashboard } from "./pages/Dashboard";
 import { Proformas } from "./pages/Proformas";
 import { Reports } from "./pages/Reports";
+import { ReportBuilder } from "./pages/ReportBuilder";
 import { Analytics } from "./pages/Analytics";
 import { UserManagement } from "./pages/UserManagement";
 import { ISOManagement } from "./pages/ISOManagement";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/" element={<Dashboard />} />
             <Route path="/proformas" element={<Proformas />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/report-builder" element={<ReportBuilder />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/users" element={<UserManagement />} />
             <Route path="/iso" element={<ISOManagement />} />
